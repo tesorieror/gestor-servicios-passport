@@ -45,6 +45,8 @@ let model = new GestorServicios();
 //
 
 function isLoggedIn(req, res, next){
+	console.log('COOKIE:',req.cookies);
+	console.log('USER:',req.user);
 	if (req.user) { next() } else { res.status(401).send({ message: 'No está logueado' }) }
 }
 
@@ -73,10 +75,10 @@ app.post('/gestor-servicios/api/signup', async (req, res, next) => {
 });
 
 app.post('/gestor-servicios/api/signin', async (req, res, next) => {
-	console.log(req.body);
+	// console.log(req.body);
 	passport.authenticate('login', async (err, user, info) => {
 		try {
-			console.log(info, user);
+			// console.log(info, user);
 			if (err || !user) {
 				if (info)
 					return res.status(401).json(info);
@@ -375,7 +377,8 @@ app.post('/gestor-servicios/api/asignaciones', async (req, res) => {
 	}
 });
 
-app.get('/gestor-servicios/api/asignaciones', isLoggedIn, async (req, res) => {	
+// app.get('/gestor-servicios/api/asignaciones', isLoggedIn, async (req, res) => {	
+app.get('/gestor-servicios/api/asignaciones', passport.authenticate('jwt', { session: false }), async (req, res) => {	
 	try {
 		let respuesta = await model.getAsignaciones();
 		res.status(200).json(respuesta);
