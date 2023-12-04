@@ -1,0 +1,109 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<title>Gestor de servicios</title>
+	<!-- Cuidado con el path estamos en /pages -->
+
+	<style>
+		div#mensajes {
+			border-top: 1px SOLID BLACK;
+			border-bottom: 1px SOLID BLACK;
+		}
+
+		li.error {
+			color: RED;
+		}
+
+		li.info {
+			color: BLUE;
+		}
+	</style>
+
+	<!-- <script src="./model/gestor-servicios.js"></script> -->
+	<script src="./model/gestor-servicios-proxy.js"></script>
+	<script src="./model/identificable.js"></script>
+	<script src="./model/usuario.js"></script>
+	<script src="./model/servicio.js"></script>
+	<script src="./model/asignacion.js"></script>
+
+	<script src="./components/commons/view.js"></script>
+	<script src="./components/commons/page-view.js"></script>
+	<script src="./components/commons/router.js"></script>
+	<script src="./components/commons/controller.js"></script>
+	<script src="./components/commons/page-controller.js"></script>
+
+	<script src="./components/mensajes/mensajes-view.js"></script>
+	<script src="./components/mensajes/mensajes.js"></script>
+
+	<script src="./components/not-found-page/not-found-page-view.js"></script>
+	<script src="./components/not-found-page/not-found-page-controller.js"></script>
+
+	<script src="./components/usuarios-page/usuarios-page-view.js"></script>
+	<script src="./components/usuarios-page/usuarios-page-controller.js"></script>
+
+	<script src="./components/usuario-page/usuario-page-view.js"></script>
+	<script src="./components/usuario-page/usuario-page-controller.js"></script>
+
+	<script src="./components/usuario-agregar-page/usuario-agregar-page-view.js"></script>
+	<script src="./components/usuario-agregar-page/usuario-agregar-page-controller.js"></script>
+
+	<script src="./components/servicios-page/servicios-page-view.js"></script>
+	<script src="./components/servicios-page/servicios-page-controller.js"></script>
+
+	<script src="./components/asignaciones-page/asignaciones-page-view.js"></script>
+	<script src="./components/asignaciones-page/asignaciones-page-controller.js"></script>
+
+	<script src="./components/home-page/home-page-view.js"></script>
+	<script src="./components/home-page/home-page-controller.js"></script>
+
+
+
+	<script>
+		let router;
+
+		async function init() {
+			// let model = new GestorServicios();
+			let API = 'http://localhost:3000/gestor-servicios/api';
+			let model = new GestorServiciosProxy(API);
+
+			// model.agregarUsuario('Usuario 1');
+			// model.agregarUsuario('Usuario 2');
+			// model.agregarUsuario('Usuario 3');
+
+			// model.agregarServicio('Servicio A')
+			// model.agregarServicio('Servicio B')
+			// model.agregarServicio('Servicio C')
+
+			// console.log(model.usuarios);
+
+			router = new Router();
+			mensajes = new Mensajes();
+
+			router.addRouter(/\/gestor\-servicios\/not\-found/, new NotFoundPageController(model));
+			router.addRouter(/\/gestor\-servicios\/index\.html$/, new HomePageController(model));
+			router.addRouter(/\/gestor\-servicios\/usuarios$/, new UsuariosPageController(model));
+			router.addRouter(/\/gestor\-servicios\/usuarios\?id=/, new UsuarioPageController(model));
+			router.addRouter(/\/gestor\-servicios\/agregarUsuarios$/, new UsuarioAgregarPageController(model));
+			router.addRouter(/\/gestor\-servicios\/servicios$/, new ServiciosPageController(model));
+			router.addRouter(/\/gestor\-servicios\/asignaciones$/, new AsignacionesPageController(model));
+			router.handleLocation();
+		}
+
+	</script>
+</head>
+
+<body onload="init()">
+	<header>
+		<h1>Gestor Servicios</h1>
+	</header>
+	<div id="mensajes"></div>
+	<main id="contents">
+		<p>Page empty</p>
+	</main>
+	<footer>
+		<p>Gestor Sercicios</p>
+	</footer>
+</body>
+
+</html>

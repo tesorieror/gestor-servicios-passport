@@ -1,0 +1,13 @@
+<nav>
+  <ul>
+    <li><a href="index.html" onclick="router.route(event);">Inicio</a></li>
+    <li><a href="usuarios" onclick="router.route(event);">Usuarios</a></li>
+    <li><a href="servicios" onclick="router.route(event);">Servicios</a></li>
+    <li><a href="asignaciones" onclick="router.route(event);">Asignaciones</a></li>
+  </ul>
+</nav>
+<h1>Usuario</h1>
+<form method="GET" action="">
+  <h2 id="usuarioNombreId">Usuario no encontrado</h2>
+  <input id="borrarId" class="button" value="Borrar" name="accion" type="submit" onclick="router.controller.borrar(event);">
+</form>
