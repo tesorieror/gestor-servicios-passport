@@ -8,7 +8,8 @@
     "test-model": ".\\node_modules\\.bin\\mocha .\\test\\model\\**\\*.js --reporter spec",
     "test-rest": ".\\node_modules\\.bin\\mocha .\\test\\rest\\**\\*.js --reporter spec",
     "start": "node .",
-    "seeder": "node ./src/seeder"
+    "seeder": "node ./src/seeder",
+    "clean-users": "node ./src/clean-users"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +21,7 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "chai-http": "^4.4.0",
+    "cookie-parser": "^1.4.6",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.1",

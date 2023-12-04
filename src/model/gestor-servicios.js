@@ -2,6 +2,9 @@ const Usuario = require('./usuario');
 const Servicio = require('./servicio');
 const Asignacion = require('./asignacion');
 
+const bcrypt = require('bcrypt');
+const User = require('./user');
+
 class GestorServicios {
 
 	constructor() {
@@ -141,6 +144,32 @@ class GestorServicios {
 		await Asignacion.findByIdAndDelete(id);
 		return resultado;
 	}
+
+	/**
+	 * Autenticación y Autorización
+	 */
+
+
+
+	async signup(newUser) {
+		let user = await User.findOne({ username: newUser.username });
+		if (!user) {
+			user = new User();
+			user.username = newUser.username;
+			user.password = await bcrypt.hash(newUser.password, 10);
+			return await user.save();
+		} else throw new Error(`El usuario ya existe`);
+	}
+
+	async signin(user) {
+
+	}
+
+	async cleanUsers(){
+		await User.deleteMany();
+	}
+
+
 
 }
 module.exports = GestorServicios;

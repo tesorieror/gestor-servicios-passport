@@ -3,6 +3,11 @@ const app = express();
 const path = require('path');
 var mongoose = require('mongoose');
 
+const passport = require('passport')
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -27,9 +32,75 @@ db.on('error', function (err) {
 });
 
 
+require('./src/config/config-passport');
+app.use(passport.initialize());
+
+
 
 const GestorServicios = require('./src/model/gestor-servicios');
 let model = new GestorServicios();
+
+//
+// Autenticación y autorización
+//
+
+function isLoggedIn(req, res, next){
+	if (req.user) { next() } else { res.status(401).send({ message: 'No está logueado' }) }
+}
+
+app.delete('/gestor-servicios/api/users', async (req, res, next) => {	
+	try {
+		await model.cleanUsers();
+		res.status(200).end();
+	}
+	catch (err) {
+		console.error(err);
+		res.status(500).json({ message: err.message })
+	}
+});
+
+
+app.post('/gestor-servicios/api/signup', async (req, res, next) => {
+	let newUser = req.body;
+	try {
+		let user = await model.signup(newUser);
+		res.status(200).json(user);
+	}
+	catch (err) {
+		console.error(err);
+		res.status(500).json({ message: err.message })
+	}
+});
+
+app.post('/gestor-servicios/api/signin', async (req, res, next) => {
+	console.log(req.body);
+	passport.authenticate('login', async (err, user, info) => {
+		try {
+			console.log(info, user);
+			if (err || !user) {
+				if (info)
+					return res.status(401).json(info);
+				else
+					return res.status(401).json({ message: 'Error desconocido' });
+			}
+			req.login(user, { session: false },
+				async (error) => {
+					if (error) return next(error);
+					const body = { _id: user._id, username: user.username };
+					const token = jwt.sign({ user: body }, 'TOP_SECRET', { expiresIn: '100s' });
+					res.cookie('jwt', token);
+					return res.json({ token });
+				}
+			);
+		} catch (error) {
+			return next(error);
+		}
+	}
+	)(req, res, next);
+});
+
+
+
 //
 // Usuarios
 //
@@ -278,15 +349,7 @@ app.put('/gestor-servicios/api/servicios/:sid', async (req, res) => {
 //
 // Asignaciones
 //
-app.get('/gestor-servicios/api/asignaciones', async (req, res) => {
-	try {
-		let respuesta = await model.getAsignaciones();
-		res.status(200).json(respuesta);
-	} catch (err) {
-		console.error(e);
-		res.status(500).json({ message: err.message });
-	}
-});
+
 
 app.get('/gestor-servicios/api/asignaciones/:aid', async (req, res) => {
 	try {
@@ -301,7 +364,7 @@ app.get('/gestor-servicios/api/asignaciones/:aid', async (req, res) => {
 
 });
 
-app.post('/gestor-servicios/api/asignaciones', async (req, res) => {
+app.post('/gestor-servicios/api/asignaciones', async (req, res) => {	
 	try {
 		let asignacion = req.body;
 		asignacion = await model.asignar(asignacion.uid, asignacion.sid)
@@ -311,6 +374,17 @@ app.post('/gestor-servicios/api/asignaciones', async (req, res) => {
 		res.status(500).json({ message: err.message });
 	}
 });
+
+app.get('/gestor-servicios/api/asignaciones', isLoggedIn, async (req, res) => {	
+	try {
+		let respuesta = await model.getAsignaciones();
+		res.status(200).json(respuesta);
+	} catch (err) {
+		console.error(e);
+		res.status(500).json({ message: err.message });
+	}
+});
+
 
 app.delete('/gestor-servicios/api/asignaciones/:aid', async (req, res) => {
 	try {
