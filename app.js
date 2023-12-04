@@ -44,13 +44,7 @@ let model = new GestorServicios();
 // Autenticación y autorización
 //
 
-function isLoggedIn(req, res, next){
-	console.log('COOKIE:',req.cookies);
-	console.log('USER:',req.user);
-	if (req.user) { next() } else { res.status(401).send({ message: 'No está logueado' }) }
-}
-
-app.delete('/gestor-servicios/api/users', async (req, res, next) => {	
+app.delete('/gestor-servicios/api/users', async (req, res, next) => {
 	try {
 		await model.cleanUsers();
 		res.status(200).end();
@@ -61,6 +55,10 @@ app.delete('/gestor-servicios/api/users', async (req, res, next) => {
 	}
 });
 
+app.post('/gestor-servicios/api/signout', async (req, res, next) => {
+	res.clearCookie('jwt');
+	res.end();
+});
 
 app.post('/gestor-servicios/api/signup', async (req, res, next) => {
 	let newUser = req.body;
@@ -366,7 +364,7 @@ app.get('/gestor-servicios/api/asignaciones/:aid', async (req, res) => {
 
 });
 
-app.post('/gestor-servicios/api/asignaciones', async (req, res) => {	
+app.post('/gestor-servicios/api/asignaciones', async (req, res) => {
 	try {
 		let asignacion = req.body;
 		asignacion = await model.asignar(asignacion.uid, asignacion.sid)
@@ -378,7 +376,7 @@ app.post('/gestor-servicios/api/asignaciones', async (req, res) => {
 });
 
 // app.get('/gestor-servicios/api/asignaciones', isLoggedIn, async (req, res) => {	
-app.get('/gestor-servicios/api/asignaciones', passport.authenticate('jwt', { session: false }), async (req, res) => {	
+app.get('/gestor-servicios/api/asignaciones', passport.authenticate('jwt', { session: false }), async (req, res) => {
 	try {
 		let respuesta = await model.getAsignaciones();
 		res.status(200).json(respuesta);

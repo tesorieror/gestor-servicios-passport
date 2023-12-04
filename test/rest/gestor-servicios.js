@@ -43,7 +43,7 @@ describe(URL, function () {
 
 	beforeEach(async function () {
 
-		response = await chai.request(URL).put(`/usuarios`).send(USUARIOS);
+		let response = await chai.request(URL).put(`/usuarios`).send(USUARIOS);
 		assert.equal(response.status, 200);
 		assert.isTrue(response.ok);
 		usuarios = response.body;
@@ -82,11 +82,91 @@ describe(URL, function () {
 			assert.deepEqual(a.servicio, ASIGNACIONES[ia].servicio._id);
 		})
 
-
-
-
-
+		let signout = await chai.request(URL).post('/signout').send();
+		assert.equal(signout.status, 200);
+		assert.isTrue(signout.ok);
 	})
+
+	it(`POST ${URL}/signin`, async function () {
+		let signin = await chai.request(URL).post('/signin').send({
+			username: USERNAME, password: PASSWORD
+		});
+		assert.equal(signin.status, 200);
+		assert.isTrue(signin.ok);
+		assert.exists(signin.header['set-cookie']);
+	});
+
+	it(`POST ${URL}/signout`, async function () {
+		let signin = await chai.request(URL).post('/signin').send({
+			username: USERNAME, password: PASSWORD
+		});
+		assert.equal(signin.status, 200);
+		assert.isTrue(signin.ok);
+		assert.exists(signin.header['set-cookie']);
+		assert.exists(signin.header['set-cookie'][0]);
+		let tokenCookie = signin.header['set-cookie'][0];
+		let startTokenIndex = tokenCookie.indexOf('jwt=');
+		let endTokenIndex = tokenCookie.indexOf(';', startTokenIndex);
+		tokenCookie = tokenCookie.substring(startTokenIndex + 4, endTokenIndex);
+		assert.equal(tokenCookie.length, 215);
+
+
+		let signout = await chai.request(URL).post('/signout').send();
+		assert.equal(signout.status, 200);
+		assert.isTrue(signout.ok);
+		assert.exists(signout.header['set-cookie']);
+		assert.exists(signout.header['set-cookie'][0]);
+		tokenCookie = signout.header['set-cookie'][0];
+		startTokenIndex = tokenCookie.indexOf('jwt=');
+		endTokenIndex = tokenCookie.indexOf(';', startTokenIndex);
+		tokenCookie = tokenCookie.substring(startTokenIndex + 4, endTokenIndex);
+		assert.equal(tokenCookie.length, 0);
+	});
+
+
+	it(`POST ${URL}/signup`, async function () {
+		let signup = await chai.request(URL).post('/signup').send({
+			username: USERNAME, password: PASSWORD
+		});
+		assert.isFalse(signup.ok);
+		assert.equal(signup.status, 500);
+
+		const USERNAME2 = 'Nuevo Usuario';
+		const PASSWORD2 = 'Nuevo Password';
+
+		signup = await chai.request(URL).post('/signup').send({
+			username: USERNAME2, password: PASSWORD2
+		});
+		assert.isTrue(signup.ok);
+		assert.equal(signup.status, 200);
+
+		let signin = await chai.request(URL).post('/signin').send({
+			username: USERNAME2, password: PASSWORD2
+		});
+		assert.equal(signin.status, 200);
+		assert.isTrue(signin.ok);
+		assert.exists(signin.header['set-cookie']);
+		assert.exists(signin.header['set-cookie'][0]);
+		let tokenCookie = signin.header['set-cookie'][0];
+		let startTokenIndex = tokenCookie.indexOf('jwt=');
+		let endTokenIndex = tokenCookie.indexOf(';', startTokenIndex);
+		tokenCookie = tokenCookie.substring(startTokenIndex + 4, endTokenIndex);
+		assert.notEqual(tokenCookie.length, 0);
+
+		let signout = await chai.request(URL).post('/signout').send();
+		assert.equal(signout.status, 200);
+		assert.isTrue(signout.ok);
+		assert.exists(signout.header['set-cookie']);
+		assert.exists(signout.header['set-cookie'][0]);
+		tokenCookie = signout.header['set-cookie'][0];
+		startTokenIndex = tokenCookie.indexOf('jwt=');
+		endTokenIndex = tokenCookie.indexOf(';', startTokenIndex);
+		tokenCookie = tokenCookie.substring(startTokenIndex + 4, endTokenIndex);
+		assert.equal(tokenCookie.length, 0);
+	});
+
+
+
 
 
 	it(`GET ${URL}/usuarios`, async function () {
@@ -566,22 +646,22 @@ describe(URL, function () {
 		assert.equal(resultado.servicio._id, asignacion.servicio)
 		assert.equal(resultado.fecha, asignacion.fecha)
 
-		
-				// START signin
-				let signinResponse = (await chai.request(URL).post('/signin').send({
-					username: USERNAME,
-					password: PASSWORD
-				}));
-				assert.equal(signinResponse.status, 200);
-				assert.isTrue(signinResponse.ok);
-				assert.exists(signinResponse.body);
-				let token = signinResponse.body;
-				// END signin
-		
-		
+
+		// START signin
+		let signinResponse = (await chai.request(URL).post('/signin').send({
+			username: USERNAME,
+			password: PASSWORD
+		}));
+		assert.equal(signinResponse.status, 200);
+		assert.isTrue(signinResponse.ok);
+		assert.exists(signinResponse.body);
+		let token = signinResponse.body;
+		// END signin
+
+
 		response = await chai.request(URL).get(`/asignaciones`)
-		.set('Cookie', `jwt=${token.token}`)		
-		.send();
+			.set('Cookie', `jwt=${token.token}`)
+			.send();
 
 
 		assert.equal(response.status, 200);

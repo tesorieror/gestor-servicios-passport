@@ -36,6 +36,7 @@ class GestorServiciosProxy {
 	}
 
 	async setUsuarios(usuarios) {
+		console.log(usuarios);
 		let response = await fetch(`${this.base}/usuarios`, {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json;charset=utf-8' },
